@@ -1,8 +1,8 @@
-import SystemZone from "./zones/systemZone.js";
-import IANAZone from "./zones/IANAZone.js";
-import Locale from "./impl/locale.js";
+import SystemZone from "./zones/systemZone";
+import IANAZone from "./zones/IANAZone";
+import Locale from "./impl/locale";
 
-import { normalizeZone } from "./impl/zoneUtil.js";
+import { normalizeZone } from "./impl/zoneUtil";
 
 let now = () => Date.now(),
   defaultZone = "system",
