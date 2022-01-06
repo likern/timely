@@ -1,5 +1,8 @@
 export default class Invalid {
-  constructor(reason, explanation) {
+  reason: string;
+  explanation: string | null;
+
+  constructor(reason: string, explanation: string | null) {
     this.reason = reason;
     this.explanation = explanation;
   }
