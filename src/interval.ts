@@ -1,8 +1,8 @@
-import DateTime, { friendlyDateTime } from "./datetime.js";
-import Duration from "./duration.js";
-import Settings from "./settings.js";
-import { InvalidArgumentError, InvalidIntervalError } from "./errors.js";
-import Invalid from "./impl/invalid.js";
+import DateTime, { friendlyDateTime } from "./datetime";
+import Duration from "./duration";
+import Settings from "./settings";
+import { InvalidArgumentError, InvalidIntervalError } from "./errors";
+import Invalid from "./impl/invalid";
 
 const INVALID = "Invalid Interval";
 
