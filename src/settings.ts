@@ -4,12 +4,12 @@ import Locale from "./impl/locale";
 
 import { normalizeZone } from "./impl/zoneUtil";
 
-let now = () => Date.now(),
-  defaultZone = "system",
-  defaultLocale = null,
-  defaultNumberingSystem = null,
-  defaultOutputCalendar = null,
-  throwOnInvalid;
+let now = () => Date.now();
+let defaultZone: string = "system";
+let defaultLocale: string | null = null;
+let defaultNumberingSystem: string | null = null;
+let defaultOutputCalendar: string | null = null;
+let throwOnInvalid: boolean;
 
 /**
  * Settings contains static getters and setters that control Luxon's overall behavior. Luxon is a simple library with few options, but the ones it does have live here.
