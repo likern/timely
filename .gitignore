@@ -1,3 +1,14 @@
+
+# Ignore all yarn v3 related files
+# See this https://yarnpkg.com/getting-started/qa#which-files-should-be-gitignored
+.pnp.*
+.yarn/*
+!.yarn/patches
+!.yarn/plugins
+!.yarn/releases
+!.yarn/sdks
+!.yarn/versions
+#
 node_modules
 .tern-port
 /build
