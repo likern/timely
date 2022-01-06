@@ -40,7 +40,7 @@ export default class Zone {
    * @param {string} opts.locale - What locale to return the offset name in.
    * @return {string}
    */
-  offsetName(ts, opts) {
+  offsetName(_ts: number, _opts: Object) {
     throw new ZoneIsAbstractError();
   }
 
@@ -52,7 +52,7 @@ export default class Zone {
    *                          Accepts 'narrow', 'short', or 'techie'. Returning '+6', '+06:00', or '+0600' respectively
    * @return {string}
    */
-  formatOffset(ts, format) {
+  formatOffset(_ts: number, _format: string) {
     throw new ZoneIsAbstractError();
   }
 
@@ -62,7 +62,7 @@ export default class Zone {
    * @param {number} ts - Epoch milliseconds for which to compute the offset
    * @return {number}
    */
-  offset(ts) {
+  offset(_ts: number) {
     throw new ZoneIsAbstractError();
   }
 
@@ -72,7 +72,7 @@ export default class Zone {
    * @param {Zone} otherZone - the zone to compare
    * @return {boolean}
    */
-  equals(otherZone) {
+  equals(_otherZone: Zone) {
     throw new ZoneIsAbstractError();
   }
 
