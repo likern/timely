@@ -39,7 +39,7 @@ export default class Settings {
    * Use the value "system" to reset this value to the system's time zone.
    * @type {string}
    */
-  static set defaultZone(zone) {
+  static set defaultZone(zone: string) {
     defaultZone = zone;
   }
 
