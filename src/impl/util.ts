@@ -11,25 +11,25 @@ import type { FormatOptions, FormatStyle } from "../types";
  * @private
  */
 
-// TYPES
+// Type predicates
 
-export function isUndefined(o: object) {
+export function isUndefined(o: unknown): o is undefined {
   return typeof o === "undefined";
 }
 
-export function isNumber(o: object) {
+export function isNumber(o: unknown): o is number {
   return typeof o === "number";
 }
 
-export function isInteger(o: object) {
+export function isInteger(o: unknown): o is number {
   return typeof o === "number" && o % 1 === 0;
 }
 
-export function isString(o: object) {
+export function isString(o: unknown): o is string {
   return typeof o === "string";
 }
 
-export function isDate(o: object) {
+export function isDate(o: object): o is Date {
   return Object.prototype.toString.call(o) === "[object Date]";
 }
 
