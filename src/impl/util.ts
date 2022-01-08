@@ -4,7 +4,8 @@
   it up into, say, parsingUtil.js and basicUtil.js and so on. But they are divided up by feature area.
 */
 
-import { InvalidArgumentError } from "../errors.js";
+import { InvalidArgumentError } from "../errors";
+import type { FormatOptions, FormatStyle } from "../types";
 
 /**
  * @private
@@ -12,23 +13,23 @@ import { InvalidArgumentError } from "../errors.js";
 
 // TYPES
 
-export function isUndefined(o) {
+export function isUndefined(o: object) {
   return typeof o === "undefined";
 }
 
-export function isNumber(o) {
+export function isNumber(o: object) {
   return typeof o === "number";
 }
 
-export function isInteger(o) {
+export function isInteger(o: object) {
   return typeof o === "number" && o % 1 === 0;
 }
 
-export function isString(o) {
+export function isString(o: object) {
   return typeof o === "string";
 }
 
-export function isDate(o) {
+export function isDate(o: object) {
   return Object.prototype.toString.call(o) === "[object Date]";
 }
 
@@ -44,7 +45,7 @@ export function hasRelative() {
 
 // OBJECTS AND ARRAYS
 
-export function maybeArray(thing) {
+export function maybeArray(thing: unknown) {
   return Array.isArray(thing) ? thing : [thing];
 }
 
@@ -190,16 +191,21 @@ export function untruncateYear(year) {
 
 // PARSING
 
-export function parseZoneInfo(ts, offsetFormat, locale, timeZone = null) {
-  const date = new Date(ts),
-    intlOpts = {
-      hourCycle: "h23",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    };
+export function parseZoneInfo(
+  ts: number,
+  offsetFormat: FormatOptions["format"],
+  locale: FormatOptions["locale"],
+  timeZone = null
+) {
+  const date = new Date(ts);
+  const intlOpts: Intl.DateTimeFormatOptions = {
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+  };
 
   if (timeZone) {
     intlOpts.timeZone = timeZone;
@@ -248,7 +254,7 @@ export function normalizeObject(obj, normalizer) {
   return normalized;
 }
 
-export function formatOffset(offset, format) {
+export function formatOffset(offset: number, format: FormatStyle) {
   const hours = Math.trunc(Math.abs(offset / 60)),
     minutes = Math.trunc(Math.abs(offset % 60)),
     sign = offset >= 0 ? "+" : "-";
