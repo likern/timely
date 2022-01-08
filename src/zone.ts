@@ -1,36 +1,28 @@
-import { ZoneIsAbstractError } from "./errors";
+import type { FormatOptions } from "./types";
 
 /**
  * @interface
  */
-export default class Zone {
+export default abstract class Zone {
   /**
    * The type of zone
    * @abstract
    * @type {string}
    */
-  get type() {
-    throw new ZoneIsAbstractError();
-  }
+  abstract get type(): string;
 
   /**
    * The name of this zone.
    * @abstract
    * @type {string}
    */
-  get name() {
-    throw new ZoneIsAbstractError();
-  }
-
+  abstract get name(): string;
   /**
    * Returns whether the offset is known to be fixed for the whole year.
    * @abstract
    * @type {boolean}
    */
-  get isUniversal() {
-    throw new ZoneIsAbstractError();
-  }
-
+  abstract get isUniversal(): boolean;
   /**
    * Returns the offset's common name (such as EST) at the specified timestamp
    * @abstract
@@ -38,12 +30,9 @@ export default class Zone {
    * @param {Object} opts - Options to affect the format
    * @param {string} opts.format - What style of offset to return. Accepts 'long' or 'short'.
    * @param {string} opts.locale - What locale to return the offset name in.
-   * @return {string}
+   * @return {string|null}
    */
-  offsetName(_ts: number, _opts: Object) {
-    throw new ZoneIsAbstractError();
-  }
-
+  abstract offsetName(_ts: number, _opts: FormatOptions): string | null;
   /**
    * Returns the offset's value as a string
    * @abstract
@@ -52,36 +41,25 @@ export default class Zone {
    *                          Accepts 'narrow', 'short', or 'techie'. Returning '+6', '+06:00', or '+0600' respectively
    * @return {string}
    */
-  formatOffset(_ts: number, _format: string) {
-    throw new ZoneIsAbstractError();
-  }
-
+  abstract formatOffset(_ts: number, _format: string): string;
   /**
    * Return the offset in minutes for this zone at the specified timestamp.
    * @abstract
    * @param {number} ts - Epoch milliseconds for which to compute the offset
    * @return {number}
    */
-  offset(_ts: number) {
-    throw new ZoneIsAbstractError();
-  }
-
+  abstract offset(_ts: number): number;
   /**
    * Return whether this Zone is equal to another zone
    * @abstract
    * @param {Zone} otherZone - the zone to compare
    * @return {boolean}
    */
-  equals(_otherZone: Zone) {
-    throw new ZoneIsAbstractError();
-  }
-
+  abstract equals(_otherZone: Zone): boolean;
   /**
    * Return whether this Zone is valid.
    * @abstract
    * @type {boolean}
    */
-  get isValid() {
-    throw new ZoneIsAbstractError();
-  }
+  abstract get isValid(): boolean;
 }
