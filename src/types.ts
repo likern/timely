@@ -9,8 +9,8 @@ export type DurationLike = Duration | Object | number;
 export type FormatStyle = "short" | "narrow" | "techie";
 
 export interface Config {
-  start?: DateTime;
-  end?: DateTime;
+  start: DateTime;
+  end: DateTime;
   invalid?: Invalid;
 }
 
@@ -20,6 +20,19 @@ export interface DateTimeOptions {
   locale: string;
   outputCalendar?: string;
   numberingSystem?: string;
+}
+
+export interface DateTimeToISOOptions {
+  format?: string;
+  suppressSeconds?: boolean;
+  suppressMilliseconds?: boolean;
+  includeOffset?: boolean;
+}
+
+export interface DurationOptions {
+  locale?: string;
+  numberingSystem?: string;
+  conversionAccuracy?: string;
 }
 
 export interface FormatOptions {
