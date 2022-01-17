@@ -1,4 +1,6 @@
-const numberingSystems = {
+import type Locale from "./locale";
+
+const numberingSystems: { [index: string]: string } = {
   arab: "[\u0660-\u0669]",
   arabext: "[\u06F0-\u06F9]",
   bali: "[\u1B50-\u1B59]",
@@ -44,32 +46,34 @@ const numberingSystemsUTF16 = {
   tibt: [3872, 3881],
 };
 
+// eslint-disable-next-line no-useless-escape
 const hanidecChars = numberingSystems.hanidec.replace(/[\[|\]]/g, "").split("");
 
-export function parseDigits(str) {
-  let value = parseInt(str, 10);
+export function parseDigits(str: string) {
+  const value = parseInt(str, 10);
   if (isNaN(value)) {
-    value = "";
+    let strValue = "";
     for (let i = 0; i < str.length; i++) {
       const code = str.charCodeAt(i);
 
       if (str[i].search(numberingSystems.hanidec) !== -1) {
-        value += hanidecChars.indexOf(str[i]);
+        strValue += hanidecChars.indexOf(str[i]);
       } else {
-        for (const key in numberingSystemsUTF16) {
+        for (const strkey in numberingSystemsUTF16) {
+          const key = strkey as keyof typeof numberingSystemsUTF16;
           const [min, max] = numberingSystemsUTF16[key];
           if (code >= min && code <= max) {
-            value += code - min;
+            strValue += code - min;
           }
         }
       }
     }
-    return parseInt(value, 10);
+    return parseInt(strValue, 10);
   } else {
     return value;
   }
 }
 
-export function digitRegex({ numberingSystem }, append = "") {
+export function digitRegex({ numberingSystem }: Locale, append = "") {
   return new RegExp(`${numberingSystems[numberingSystem || "latn"]}${append}`);
 }
