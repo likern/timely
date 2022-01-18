@@ -218,7 +218,7 @@ export function parseZoneInfo(
   ts: number,
   offsetFormat: FormatOptions["format"],
   locale: FormatOptions["locale"],
-  timeZone = null
+  timeZone: string | null = null
 ) {
   const date = new Date(ts);
   const intlOpts: Intl.DateTimeFormatOptions = {
