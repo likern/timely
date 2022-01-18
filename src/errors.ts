@@ -1,15 +1,17 @@
 // these aren't really private, but nor are they really useful to document
 
+import type Invalid from "./impl/invalid";
+
 /**
  * @private
  */
-class LuxonError extends Error {}
+export class LuxonError extends Error {}
 
 /**
  * @private
  */
 export class InvalidDateTimeError extends LuxonError {
-  constructor(reason) {
+  constructor(reason: Invalid) {
     super(`Invalid DateTime: ${reason.toMessage()}`);
   }
 }
@@ -18,7 +20,7 @@ export class InvalidDateTimeError extends LuxonError {
  * @private
  */
 export class InvalidIntervalError extends LuxonError {
-  constructor(reason) {
+  constructor(reason: Invalid) {
     super(`Invalid Interval: ${reason.toMessage()}`);
   }
 }
@@ -27,7 +29,7 @@ export class InvalidIntervalError extends LuxonError {
  * @private
  */
 export class InvalidDurationError extends LuxonError {
-  constructor(reason) {
+  constructor(reason: Invalid) {
     super(`Invalid Duration: ${reason.toMessage()}`);
   }
 }
@@ -41,7 +43,7 @@ export class ConflictingSpecificationError extends LuxonError {}
  * @private
  */
 export class InvalidUnitError extends LuxonError {
-  constructor(unit) {
+  constructor(unit: string) {
     super(`Invalid unit ${unit}`);
   }
 }

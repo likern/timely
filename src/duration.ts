@@ -12,95 +12,140 @@ import {
   normalizeObject,
   roundTo,
 } from "./impl/util.js";
-import Settings from "./settings.js";
+
+import Settings from "./settings";
+
+import type {
+  DateTimeOptions,
+  DurationAccurateMatrix,
+  DurationCasualMatrix,
+  DurationConfig,
+  DurationFormatOptions,
+  DurationLike,
+  DurationLowOrderMatrix,
+  DurationMatrix,
+  DurationOptions,
+  PluralUnits,
+  PluralUnitsArray,
+  PluralUnitsObject,
+  Reverse,
+  Units,
+  UnitsObject,
+} from "./types";
 
 const INVALID = "Invalid Duration";
 
-// unit conversion constants
-export const lowOrderMatrix = {
-    weeks: {
-      days: 7,
-      hours: 7 * 24,
-      minutes: 7 * 24 * 60,
-      seconds: 7 * 24 * 60 * 60,
-      milliseconds: 7 * 24 * 60 * 60 * 1000,
-    },
-    days: {
-      hours: 24,
-      minutes: 24 * 60,
-      seconds: 24 * 60 * 60,
-      milliseconds: 24 * 60 * 60 * 1000,
-    },
-    hours: { minutes: 60, seconds: 60 * 60, milliseconds: 60 * 60 * 1000 },
-    minutes: { seconds: 60, milliseconds: 60 * 1000 },
-    seconds: { milliseconds: 1000 },
-  },
-  casualMatrix = {
-    years: {
-      quarters: 4,
-      months: 12,
-      weeks: 52,
-      days: 365,
-      hours: 365 * 24,
-      minutes: 365 * 24 * 60,
-      seconds: 365 * 24 * 60 * 60,
-      milliseconds: 365 * 24 * 60 * 60 * 1000,
-    },
-    quarters: {
-      months: 3,
-      weeks: 13,
-      days: 91,
-      hours: 91 * 24,
-      minutes: 91 * 24 * 60,
-      seconds: 91 * 24 * 60 * 60,
-      milliseconds: 91 * 24 * 60 * 60 * 1000,
-    },
-    months: {
-      weeks: 4,
-      days: 30,
-      hours: 30 * 24,
-      minutes: 30 * 24 * 60,
-      seconds: 30 * 24 * 60 * 60,
-      milliseconds: 30 * 24 * 60 * 60 * 1000,
-    },
+const mapToPlural = new Map<string, PluralUnits>(
+  Object.entries({
+    year: "years",
+    years: "years",
+    quarter: "quarters",
+    quarters: "quarters",
+    month: "months",
+    months: "months",
+    week: "weeks",
+    weeks: "weeks",
+    day: "days",
+    days: "days",
+    hour: "hours",
+    hours: "hours",
+    minute: "minutes",
+    minutes: "minutes",
+    second: "seconds",
+    seconds: "seconds",
+    millisecond: "milliseconds",
+    milliseconds: "milliseconds",
+  } as const)
+);
 
-    ...lowOrderMatrix,
+// unit conversion constants
+export const lowOrderMatrix: DurationLowOrderMatrix = {
+  weeks: {
+    days: 7,
+    hours: 7 * 24,
+    minutes: 7 * 24 * 60,
+    seconds: 7 * 24 * 60 * 60,
+    milliseconds: 7 * 24 * 60 * 60 * 1000,
   },
-  daysInYearAccurate = 146097.0 / 400,
-  daysInMonthAccurate = 146097.0 / 4800,
-  accurateMatrix = {
-    years: {
-      quarters: 4,
-      months: 12,
-      weeks: daysInYearAccurate / 7,
-      days: daysInYearAccurate,
-      hours: daysInYearAccurate * 24,
-      minutes: daysInYearAccurate * 24 * 60,
-      seconds: daysInYearAccurate * 24 * 60 * 60,
-      milliseconds: daysInYearAccurate * 24 * 60 * 60 * 1000,
-    },
-    quarters: {
-      months: 3,
-      weeks: daysInYearAccurate / 28,
-      days: daysInYearAccurate / 4,
-      hours: (daysInYearAccurate * 24) / 4,
-      minutes: (daysInYearAccurate * 24 * 60) / 4,
-      seconds: (daysInYearAccurate * 24 * 60 * 60) / 4,
-      milliseconds: (daysInYearAccurate * 24 * 60 * 60 * 1000) / 4,
-    },
-    months: {
-      weeks: daysInMonthAccurate / 7,
-      days: daysInMonthAccurate,
-      hours: daysInMonthAccurate * 24,
-      minutes: daysInMonthAccurate * 24 * 60,
-      seconds: daysInMonthAccurate * 24 * 60 * 60,
-      milliseconds: daysInMonthAccurate * 24 * 60 * 60 * 1000,
-    },
-    ...lowOrderMatrix,
-  };
+  days: {
+    hours: 24,
+    minutes: 24 * 60,
+    seconds: 24 * 60 * 60,
+    milliseconds: 24 * 60 * 60 * 1000,
+  },
+  hours: { minutes: 60, seconds: 60 * 60, milliseconds: 60 * 60 * 1000 },
+  minutes: { seconds: 60, milliseconds: 60 * 1000 },
+  seconds: { milliseconds: 1000 },
+};
+
+const casualMatrix: DurationCasualMatrix = {
+  years: {
+    quarters: 4,
+    months: 12,
+    weeks: 52,
+    days: 365,
+    hours: 365 * 24,
+    minutes: 365 * 24 * 60,
+    seconds: 365 * 24 * 60 * 60,
+    milliseconds: 365 * 24 * 60 * 60 * 1000,
+  },
+  quarters: {
+    months: 3,
+    weeks: 13,
+    days: 91,
+    hours: 91 * 24,
+    minutes: 91 * 24 * 60,
+    seconds: 91 * 24 * 60 * 60,
+    milliseconds: 91 * 24 * 60 * 60 * 1000,
+  },
+  months: {
+    weeks: 4,
+    days: 30,
+    hours: 30 * 24,
+    minutes: 30 * 24 * 60,
+    seconds: 30 * 24 * 60 * 60,
+    milliseconds: 30 * 24 * 60 * 60 * 1000,
+  },
+  ...lowOrderMatrix,
+};
+
+const daysInYearAccurate = 146097.0 / 400;
+const daysInMonthAccurate = 146097.0 / 4800;
+
+const accurateMatrix: DurationAccurateMatrix = {
+  years: {
+    quarters: 4,
+    months: 12,
+    weeks: daysInYearAccurate / 7,
+    days: daysInYearAccurate,
+    hours: daysInYearAccurate * 24,
+    minutes: daysInYearAccurate * 24 * 60,
+    seconds: daysInYearAccurate * 24 * 60 * 60,
+    milliseconds: daysInYearAccurate * 24 * 60 * 60 * 1000,
+  },
+  quarters: {
+    months: 3,
+    weeks: daysInYearAccurate / 28,
+    days: daysInYearAccurate / 4,
+    hours: (daysInYearAccurate * 24) / 4,
+    minutes: (daysInYearAccurate * 24 * 60) / 4,
+    seconds: (daysInYearAccurate * 24 * 60 * 60) / 4,
+    milliseconds: (daysInYearAccurate * 24 * 60 * 60 * 1000) / 4,
+  },
+  months: {
+    weeks: daysInMonthAccurate / 7,
+    days: daysInMonthAccurate,
+    hours: daysInMonthAccurate * 24,
+    minutes: daysInMonthAccurate * 24 * 60,
+    seconds: daysInMonthAccurate * 24 * 60 * 60,
+    milliseconds: daysInMonthAccurate * 24 * 60 * 60 * 1000,
+  },
+  ...lowOrderMatrix,
+};
 
 // units ordered by size
-const orderedUnits = [
+
+const orderedUnits: PluralUnitsArray = [
   "years",
   "quarters",
   "months",
@@ -112,38 +157,63 @@ const orderedUnits = [
   "milliseconds",
 ];
 
-const reverseUnits = orderedUnits.slice(0).reverse();
+const reverseUnits = orderedUnits.slice(0).reverse() as Reverse<PluralUnitsArray>;
 
 // clone really means "create another instance just like this one, but with these changes"
-function clone(dur, alts, clear = false) {
+function clone(
+  dur: Duration,
+  // alts: {
+  //   values: Pick<Duration, "values">;
+  //   // loc: Pick<Duration, "loc">;
+  //   // conversionAccuracy: Pick<Duration, "conversionAccuracy">;
+  // },
+  // alts: Pick<Duration, "values" | "loc" | "conversionAccuracy">,
+  alts: Partial<Pick<Duration, "values">> &
+    Partial<Pick<Duration, "loc">> &
+    Partial<Pick<Duration, "conversionAccuracy">>,
+  clear = false
+) {
   // deep merge for vals
   const conf = {
     values: clear ? alts.values : { ...dur.values, ...(alts.values || {}) },
     loc: dur.loc.clone(alts.loc),
     conversionAccuracy: alts.conversionAccuracy || dur.conversionAccuracy,
   };
+  // @ts-expect-error
   return new Duration(conf);
 }
 
-function antiTrunc(n) {
+function antiTrunc(n: number) {
   return n < 0 ? Math.floor(n) : Math.ceil(n);
 }
 
 // NB: mutates parameters
-function convert(matrix, fromMap, fromUnit, toMap, toUnit) {
-  const conv = matrix[toUnit][fromUnit],
-    raw = fromMap[fromUnit] / conv,
-    sameSign = Math.sign(raw) === Math.sign(toMap[toUnit]),
-    // ok, so this is wild, but see the matrix in the tests
-    added =
-      !sameSign && toMap[toUnit] !== 0 && Math.abs(raw) <= 1 ? antiTrunc(raw) : Math.trunc(raw);
+function convert(
+  matrix: DurationMatrix,
+  fromMap: Partial<PluralUnitsObject>,
+  fromUnit: PluralUnits,
+  toMap: Partial<PluralUnitsObject>,
+  toUnit: PluralUnits
+) {
+  // @ts-expect-error
+  const conv = matrix[toUnit][fromUnit];
+  // @ts-expect-error
+  const raw = fromMap[fromUnit] / conv;
+  // @ts-expect-error
+  const sameSign = Math.sign(raw) === Math.sign(toMap[toUnit]);
+  // ok, so this is wild, but see the matrix in the tests
+  const added =
+    !sameSign && toMap[toUnit] !== 0 && Math.abs(raw) <= 1 ? antiTrunc(raw) : Math.trunc(raw);
+
+  // @ts-expect-error
   toMap[toUnit] += added;
+  // @ts-expect-error
   fromMap[fromUnit] -= added * conv;
 }
 
 // NB: mutates parameters
-function normalizeValues(matrix, vals) {
-  reverseUnits.reduce((previous, current) => {
+function normalizeValues(matrix: DurationMatrix, vals: Partial<PluralUnitsObject>) {
+  reverseUnits.reduce((previous: PluralUnits | null, current) => {
     if (!isUndefined(vals[current])) {
       if (previous) {
         convert(matrix, vals, previous, vals, current);
@@ -153,6 +223,26 @@ function normalizeValues(matrix, vals) {
       return previous;
     }
   }, null);
+}
+
+function isDurationValues(object: unknown): object is PluralUnitsObject {
+  if (typeof object !== "object") {
+    return false;
+  }
+
+  if (object === null) {
+    return false;
+  }
+
+  const keys = Object.keys(object);
+  for (const key of keys) {
+    for (const unit of orderedUnits) {
+      if (key === unit) {
+        return true;
+      }
+    }
+  }
+  return false;
 }
 
 /**
@@ -169,10 +259,17 @@ function normalizeValues(matrix, vals) {
  * There's are more methods documented below. In addition, for more information on subtler topics like internationalization and validity, see the external documentation.
  */
 export default class Duration {
+  values: Partial<PluralUnitsObject>;
+  loc: Locale;
+  conversionAccuracy: "longterm" | "casual";
+  invalid?: Invalid | null;
+  matrix: DurationMatrix;
+  isLuxonDuration?: boolean;
+
   /**
    * @private
    */
-  constructor(config) {
+  constructor(config: DurationConfig) {
     const accurate = config.conversionAccuracy === "longterm" || false;
     /**
      * @access private
@@ -209,7 +306,7 @@ export default class Duration {
    * @param {string} [opts.conversionAccuracy='casual'] - the conversion system to use
    * @return {Duration}
    */
-  static fromMillis(count, opts) {
+  static fromMillis(count: number, opts?: DurationOptions) {
     return Duration.fromObject({ milliseconds: count }, opts);
   }
 
@@ -232,18 +329,26 @@ export default class Duration {
    * @param {string} [opts.conversionAccuracy='casual'] - the conversion system to use
    * @return {Duration}
    */
-  static fromObject(obj, opts = {}) {
-    if (obj == null || typeof obj !== "object") {
+  static fromObject(obj: Partial<PluralUnitsObject>, opts: DurationOptions = {}) {
+    // if (obj == null || typeof obj !== "object") {
+    //   throw new InvalidArgumentError(
+    //     `Duration.fromObject: argument expected to be an object, got ${
+    //       obj === null ? "null" : typeof obj
+    //     }`
+    //   );
+    // }
+
+    if (!isDurationValues(obj)) {
       throw new InvalidArgumentError(
-        `Duration.fromObject: argument expected to be an object, got ${
-          obj === null ? "null" : typeof obj
-        }`
+        `Duration.fromObject: argument expected to be an object with keys [${orderedUnits}]`
       );
     }
 
     return new Duration({
+      // FIXME: Some type not fully correct
       values: normalizeObject(obj, Duration.normalizeUnit),
       loc: Locale.fromObject(opts),
+      // @ts-expect-error
       conversionAccuracy: opts.conversionAccuracy,
     });
   }
@@ -258,12 +363,12 @@ export default class Duration {
    * - Duration instance
    * @return {Duration}
    */
-  static fromDurationLike(durationLike) {
+  static fromDurationLike(durationLike: DurationLike) {
     if (isNumber(durationLike)) {
       return Duration.fromMillis(durationLike);
     } else if (Duration.isDuration(durationLike)) {
       return durationLike;
-    } else if (typeof durationLike === "object") {
+    } else if (isDurationValues(durationLike)) {
       return Duration.fromObject(durationLike);
     } else {
       throw new InvalidArgumentError(
@@ -285,9 +390,9 @@ export default class Duration {
    * @example Duration.fromISO('P5Y3M').toObject() //=> { years: 5, months: 3 }
    * @return {Duration}
    */
-  static fromISO(text, opts) {
+  static fromISO(text: string, opts: DateTimeOptions) {
     const [parsed] = parseISODuration(text);
-    if (parsed) {
+    if (isDurationValues(parsed)) {
       return Duration.fromObject(parsed, opts);
     } else {
       return Duration.invalid("unparsable", `the input "${text}" can't be parsed as ISO 8601`);
@@ -309,9 +414,9 @@ export default class Duration {
    * @example Duration.fromISOTime('T1100').toObject() //=> { hours: 11, minutes: 0, seconds: 0 }
    * @return {Duration}
    */
-  static fromISOTime(text, opts) {
+  static fromISOTime(text: string, opts: DurationOptions) {
     const [parsed] = parseISOTimeOnly(text);
-    if (parsed) {
+    if (isDurationValues(parsed)) {
       return Duration.fromObject(parsed, opts);
     } else {
       return Duration.invalid("unparsable", `the input "${text}" can't be parsed as ISO 8601`);
@@ -324,7 +429,7 @@ export default class Duration {
    * @param {string} [explanation=null] - longer explanation, may include parameters and other useful debugging information
    * @return {Duration}
    */
-  static invalid(reason, explanation = null) {
+  static invalid(reason: string | null | Invalid, explanation: string | null = null) {
     if (!reason) {
       throw new InvalidArgumentError("need to specify a reason the Duration is invalid");
     }
@@ -334,6 +439,7 @@ export default class Duration {
     if (Settings.throwOnInvalid) {
       throw new InvalidDurationError(invalid);
     } else {
+      // @ts-expect-error
       return new Duration({ invalid });
     }
   }
@@ -341,31 +447,15 @@ export default class Duration {
   /**
    * @private
    */
-  static normalizeUnit(unit) {
-    const normalized = {
-      year: "years",
-      years: "years",
-      quarter: "quarters",
-      quarters: "quarters",
-      month: "months",
-      months: "months",
-      week: "weeks",
-      weeks: "weeks",
-      day: "days",
-      days: "days",
-      hour: "hours",
-      hours: "hours",
-      minute: "minutes",
-      minutes: "minutes",
-      second: "seconds",
-      seconds: "seconds",
-      millisecond: "milliseconds",
-      milliseconds: "milliseconds",
-    }[unit ? unit.toLowerCase() : unit];
+  static normalizeUnit(unit: string): PluralUnits {
+    const lowerCase = unit.toLowerCase();
+    const plural = mapToPlural.get(lowerCase);
 
-    if (!normalized) throw new InvalidUnitError(unit);
+    if (plural === undefined) {
+      throw new InvalidUnitError(unit);
+    }
 
-    return normalized;
+    return plural;
   }
 
   /**
@@ -373,8 +463,20 @@ export default class Duration {
    * @param {object} o
    * @return {boolean}
    */
-  static isDuration(o) {
-    return (o && o.isLuxonDuration) || false;
+  static isDuration(o: unknown): o is Duration {
+    if (typeof o !== "object") {
+      return false;
+    }
+
+    if (o === null) {
+      return false;
+    }
+
+    /**
+     * object o can be created with Object.create(null),
+     * so without "hasOwnProperty" method
+     */
+    return Object.prototype.hasOwnProperty.call(o, "isLuxonDuration");
   }
 
   /**
@@ -414,7 +516,7 @@ export default class Duration {
    * @example Duration.fromObject({ years: 1, days: 6, seconds: 2 }).toFormat("M S") //=> "12 518402000"
    * @return {string}
    */
-  toFormat(fmt, opts = {}) {
+  toFormat(fmt: string, opts: Partial<DurationFormatOptions> = {}) {
     // reverse-compat since 1.2; we always round down now, never up, and we do it by default
     const fmtOpts = {
       ...opts,
@@ -460,8 +562,11 @@ export default class Duration {
    * @example Duration.fromObject({ years: 1, days: 6, seconds: 2 }).toObject() //=> { years: 1, days: 6, seconds: 2 }
    * @return {Object}
    */
-  toObject() {
-    if (!this.isValid) return {};
+  toObject(): Partial<PluralUnitsObject> {
+    if (!this.isValid) {
+      const invalid = new Invalid(INVALID, "Duration.toObject: isValid() returned false");
+      throw new InvalidDurationError(invalid);
+    }
     return { ...this.values };
   }
 
@@ -583,11 +688,11 @@ export default class Duration {
    * @param {Duration|Object|number} duration - The amount to add. Either a Luxon Duration, a number of milliseconds, the object argument to Duration.fromObject()
    * @return {Duration}
    */
-  plus(duration) {
+  plus(duration: DurationLike) {
     if (!this.isValid) return this;
 
-    const dur = Duration.fromDurationLike(duration),
-      result = {};
+    const dur = Duration.fromDurationLike(duration);
+    const result: Partial<PluralUnitsObject> = {};
 
     for (const k of orderedUnits) {
       if (hasOwnProperty(dur.values, k) || hasOwnProperty(this.values, k)) {
@@ -603,7 +708,7 @@ export default class Duration {
    * @param {Duration|Object|number} duration - The amount to subtract. Either a Luxon Duration, a number of milliseconds, the object argument to Duration.fromObject()
    * @return {Duration}
    */
-  minus(duration) {
+  minus(duration: DurationLike) {
     if (!this.isValid) return this;
 
     const dur = Duration.fromDurationLike(duration);
@@ -617,11 +722,13 @@ export default class Duration {
    * @example Duration.fromObject({ hours: 1, minutes: 30 }).mapUnits((x, u) => u === "hour" ? x * 2 : x) //=> { hours: 2, minutes: 30 }
    * @return {Duration}
    */
-  mapUnits(fn) {
+  mapUnits(fn: (x: number, u?: Units) => Duration) {
     if (!this.isValid) return this;
-    const result = {};
-    for (const k of Object.keys(this.values)) {
-      result[k] = asNumber(fn(this.values[k], k));
+    const result: Partial<PluralUnitsObject> = {};
+    for (const _ of Object.keys(this.values)) {
+      const key = _ as PluralUnits;
+      const num = this.values[key]!;
+      result[key] = asNumber(fn(num, key));
     }
     return clone(this, { values: result }, true);
   }
@@ -634,7 +741,7 @@ export default class Duration {
    * @example Duration.fromObject({years: 2, days: 3}).get('days') //=> 3
    * @return {number}
    */
-  get(unit) {
+  get(unit: Units) {
     return this[Duration.normalizeUnit(unit)];
   }
 
@@ -645,7 +752,7 @@ export default class Duration {
    * @example dur.set({ hours: 8, minutes: 30 })
    * @return {Duration}
    */
-  set(values) {
+  set(values: UnitsObject) {
     if (!this.isValid) return this;
 
     const mixed = { ...this.values, ...normalizeObject(values, Duration.normalizeUnit) };
@@ -657,11 +764,13 @@ export default class Duration {
    * @example dur.reconfigure({ locale: 'en-GB' })
    * @return {Duration}
    */
+  // @ts-expect-error
   reconfigure({ locale, numberingSystem, conversionAccuracy } = {}) {
     const loc = this.loc.clone({ locale, numberingSystem }),
       opts = { loc };
 
     if (conversionAccuracy) {
+      // @ts-expect-error
       opts.conversionAccuracy = conversionAccuracy;
     }
 
@@ -676,7 +785,7 @@ export default class Duration {
    * @example Duration.fromObject({hours: 60}).as('days') //=> 2.5
    * @return {number}
    */
-  as(unit) {
+  as(unit: PluralUnits) {
     return this.isValid ? this.shiftTo(unit).get(unit) : NaN;
   }
 
@@ -698,35 +807,40 @@ export default class Duration {
    * @example Duration.fromObject({ hours: 1, seconds: 30 }).shiftTo('minutes', 'milliseconds').toObject() //=> { minutes: 60, milliseconds: 30000 }
    * @return {Duration}
    */
-  shiftTo(...units) {
+  shiftTo(...units: PluralUnits[]) {
     if (!this.isValid) return this;
 
     if (units.length === 0) {
       return this;
     }
 
-    units = units.map((u) => Duration.normalizeUnit(u));
+    const normalizedUnits = units.map((u) => Duration.normalizeUnit(u));
 
-    const built = {},
-      accumulated = {},
-      vals = this.toObject();
-    let lastUnit;
+    const built: Partial<PluralUnitsObject> = {};
+    const accumulated: Partial<PluralUnitsObject> = {};
+    const vals = this.toObject();
+    let lastUnit: PluralUnits;
 
     for (const k of orderedUnits) {
-      if (units.indexOf(k) >= 0) {
+      if (normalizedUnits.indexOf(k) >= 0) {
         lastUnit = k;
 
         let own = 0;
 
         // anything we haven't boiled down yet should get boiled to this unit
-        for (const ak in accumulated) {
+        for (const _ in accumulated) {
+          const ak = _ as PluralUnits;
+          // @ts-expect-error
+          const matrixValue = this.matrix[ak][k];
+          // @ts-expect-error
           own += this.matrix[ak][k] * accumulated[ak];
           accumulated[ak] = 0;
         }
 
         // plus anything that's already in this unit
-        if (isNumber(vals[k])) {
-          own += vals[k];
+        const value = vals[k];
+        if (isNumber(value)) {
+          own += value;
         }
 
         const i = Math.trunc(own);
@@ -734,9 +848,10 @@ export default class Duration {
         accumulated[k] = (own * 1000 - i * 1000) / 1000;
 
         // plus anything further down the chain that should be rolled up in to this
-        for (const down in vals) {
-          if (orderedUnits.indexOf(down) > orderedUnits.indexOf(k)) {
-            convert(this.matrix, vals, down, built, k);
+        for (const _ in vals) {
+          const downUnit = _ as PluralUnits;
+          if (orderedUnits.indexOf(downUnit) > orderedUnits.indexOf(k)) {
+            convert(this.matrix, vals, downUnit, built, k);
           }
         }
         // otherwise, keep it in the wings to boil it later
@@ -748,9 +863,16 @@ export default class Duration {
     // anything leftover becomes the decimal for the last unit
     // lastUnit must be defined since units is not empty
     for (const key in accumulated) {
-      if (accumulated[key] !== 0) {
+      const unitKey = key as PluralUnits;
+      if (accumulated[unitKey] !== 0) {
+        // @ts-expect-error
+        const accumulatedValue: number = accumulated[unitKey];
+        // @ts-expect-error
+        const matrixValue: number = this.matrix[lastUnit][unitKey];
+        // @ts-expect-error
         built[lastUnit] +=
-          key === lastUnit ? accumulated[key] : accumulated[key] / this.matrix[lastUnit][key];
+          // @ts-expect-error
+          unitKey === lastUnit ? accumulatedValue : accumulatedValue / matrixValue;
       }
     }
 
@@ -764,9 +886,13 @@ export default class Duration {
    */
   negate() {
     if (!this.isValid) return this;
-    const negated = {};
+    const negated: Partial<PluralUnitsObject> = {};
     for (const k of Object.keys(this.values)) {
-      negated[k] = -this.values[k];
+      const unitKey = k as PluralUnits;
+      const value = this.values[unitKey];
+      if (value !== undefined) {
+        negated[unitKey] = -value;
+      }
     }
     return clone(this, { values: negated }, true);
   }
@@ -874,7 +1000,7 @@ export default class Duration {
    * @param {Duration} other
    * @return {boolean}
    */
-  equals(other) {
+  equals(other: Duration) {
     if (!this.isValid || !other.isValid) {
       return false;
     }
@@ -883,7 +1009,7 @@ export default class Duration {
       return false;
     }
 
-    function eq(v1, v2) {
+    function eq(v1?: number, v2?: number) {
       // Consider 0 and undefined as equal
       if (v1 === undefined || v1 === 0) return v2 === undefined || v2 === 0;
       return v1 === v2;

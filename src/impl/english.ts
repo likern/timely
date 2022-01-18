@@ -1,7 +1,9 @@
-import * as Formats from "./formats.js";
-import { pick } from "./util.js";
+import * as Formats from "./formats";
+import { pick } from "./util";
 
-function stringify(obj) {
+import type DateTime from "../datetime";
+
+function stringify(obj: object) {
   return JSON.stringify(obj, Object.keys(obj).sort());
 }
 
@@ -41,7 +43,7 @@ export const monthsShort = [
 
 export const monthsNarrow = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
 
-export function months(length) {
+export function months(length: string) {
   switch (length) {
     case "narrow":
       return [...monthsNarrow];
@@ -72,7 +74,7 @@ export const weekdaysShort = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
 export const weekdaysNarrow = ["M", "T", "W", "T", "F", "S", "S"];
 
-export function weekdays(length) {
+export function weekdays(length: string) {
   switch (length) {
     case "narrow":
       return [...weekdaysNarrow];
@@ -95,7 +97,7 @@ export const erasShort = ["BC", "AD"];
 
 export const erasNarrow = ["B", "A"];
 
-export function eras(length) {
+export function eras(length: string) {
   switch (length) {
     case "narrow":
       return [...erasNarrow];
@@ -108,23 +110,28 @@ export function eras(length) {
   }
 }
 
-export function meridiemForDateTime(dt) {
+export function meridiemForDateTime(dt: DateTime) {
   return meridiems[dt.hour < 12 ? 0 : 1];
 }
 
-export function weekdayForDateTime(dt, length) {
-  return weekdays(length)[dt.weekday - 1];
+export function weekdayForDateTime(dt: DateTime, length: string) {
+  return weekdays(length)?.[dt.weekday - 1];
 }
 
-export function monthForDateTime(dt, length) {
-  return months(length)[dt.month - 1];
+export function monthForDateTime(dt: DateTime, length: string) {
+  return months(length)?.[dt.month - 1];
 }
 
-export function eraForDateTime(dt, length) {
-  return eras(length)[dt.year < 0 ? 0 : 1];
+export function eraForDateTime(dt: DateTime, length: string) {
+  return eras(length)?.[dt.year < 0 ? 0 : 1];
 }
 
-export function formatRelativeTime(unit, count, numeric = "always", narrow = false) {
+export function formatRelativeTime(
+  unit: Intl.RelativeTimeFormatUnit,
+  count: number,
+  numeric = "always",
+  narrow = false
+) {
   const units = {
     years: ["year", "yr."],
     quarters: ["quarter", "qtr."],
@@ -165,7 +172,7 @@ export function formatRelativeTime(unit, count, numeric = "always", narrow = fal
   return isInPast ? `${fmtValue} ${fmtUnit} ago` : `in ${fmtValue} ${fmtUnit}`;
 }
 
-export function formatString(knownFormat) {
+export function formatString(knownFormat: { [index: string]: number }) {
   // these all have the offsets removed because we don't have access to them
   // without all the intl stuff this is backfilling
   const filtered = pick(knownFormat, [
