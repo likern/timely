@@ -1,13 +1,16 @@
-import { formatOffset, signedOffset } from "../impl/util.js";
-import Zone from "../zone.js";
+import { formatOffset, signedOffset } from "../impl/util";
+import Zone from "../zone";
+import type { FormatStyle } from "../types";
 
-let singleton = null;
+let singleton: FixedOffsetZone | null = null;
 
 /**
  * A zone with a fixed offset (meaning no DST)
  * @implements {Zone}
  */
 export default class FixedOffsetZone extends Zone {
+  fixed: number;
+
   /**
    * Get a singleton instance of UTC
    * @return {FixedOffsetZone}
@@ -24,7 +27,7 @@ export default class FixedOffsetZone extends Zone {
    * @param {number} offset - The offset in minutes
    * @return {FixedOffsetZone}
    */
-  static instance(offset) {
+  static instance(offset: number) {
     return offset === 0 ? FixedOffsetZone.utcInstance : new FixedOffsetZone(offset);
   }
 
@@ -36,7 +39,7 @@ export default class FixedOffsetZone extends Zone {
    * @example FixedOffsetZone.parseSpecifier("UTC-6:00")
    * @return {FixedOffsetZone}
    */
-  static parseSpecifier(s) {
+  static parseSpecifier(s: string) {
     if (s) {
       const r = s.match(/^utc(?:([+-]\d{1,2})(?::(\d{2}))?)?$/i);
       if (r) {
@@ -46,7 +49,7 @@ export default class FixedOffsetZone extends Zone {
     return null;
   }
 
-  constructor(offset) {
+  constructor(offset: number) {
     super();
     /** @private **/
     this.fixed = offset;
@@ -67,8 +70,11 @@ export default class FixedOffsetZone extends Zone {
     return this.name;
   }
 
+  /**
+   * FIXME: ts parameter is not used here
+   */
   /** @override **/
-  formatOffset(ts, format) {
+  formatOffset(_ts: number, format: FormatStyle) {
     return formatOffset(this.fixed, format);
   }
 
@@ -83,8 +89,12 @@ export default class FixedOffsetZone extends Zone {
   }
 
   /** @override **/
-  equals(otherZone) {
-    return otherZone.type === "fixed" && otherZone.fixed === this.fixed;
+  equals(otherZone: Zone): boolean {
+    return (
+      otherZone.type === "fixed" &&
+      Object.prototype.hasOwnProperty.call(otherZone, "fixed") &&
+      (otherZone as FixedOffsetZone).fixed === this.fixed
+    );
   }
 
   /** @override **/
