@@ -1,11 +1,13 @@
-import Zone from "../zone.js";
+import Zone from "../zone";
 
 /**
  * A zone that failed to parse. You should never need to instantiate this.
  * @implements {Zone}
  */
 export default class InvalidZone extends Zone {
-  constructor(zoneName) {
+  zoneName: string;
+
+  constructor(zoneName: string) {
     super();
     /**  @private */
     this.zoneName = zoneName;
