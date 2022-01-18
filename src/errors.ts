@@ -5,7 +5,7 @@ import type Invalid from "./impl/invalid";
 /**
  * @private
  */
-class LuxonError extends Error {}
+export class LuxonError extends Error {}
 
 /**
  * @private
