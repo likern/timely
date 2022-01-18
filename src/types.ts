@@ -19,21 +19,6 @@ export interface Config {
   invalid?: Invalid;
 }
 
-export interface DateTimeOptions {
-  zone: string | Zone;
-  setZone: boolean;
-  locale: string;
-  outputCalendar?: string;
-  numberingSystem?: string;
-}
-
-export interface DateTimeToISOOptions {
-  format?: string;
-  suppressSeconds?: boolean;
-  suppressMilliseconds?: boolean;
-  includeOffset?: boolean;
-}
-
 export interface DurationFormatOptions {
   round: boolean;
   floor: boolean;
@@ -95,8 +80,8 @@ export type PluralUnitsObject = {
 };
 
 export interface DurationOptions {
-  locale?: string;
-  numberingSystem?: string;
+  locale?: string | null;
+  numberingSystem?: string | null;
   conversionAccuracy?: "longterm" | "casual";
 }
 
